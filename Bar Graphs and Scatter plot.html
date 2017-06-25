@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+
+
+<Html>
+<Head> 
+
+
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis line,
+.axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+
+div {
+  font: 10px sans-serif;
+}
+
+.axis line,
+.axis path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+} 
+
+h3 {
+color: blue;
+
+}
+
+</style>
+<script src= "http://d3js.org/d3.v3.min.js" charset="utf-8"> </script>
+
+<script src = "http://www.cis.umassd.edu/~dkoop/dsc530-2016sp/a2/campaign_finance.js " charset="utf-8"> </script>
+<script src = "http://www.cis.umassd.edu/~dkoop/dsc530-2016sp/a2/campaign_finance.js " charset="utf-8"> </script>
+
+</Head>
+
+<body>
+
+
+<h3 style="font-size:15px"  >Virbhadrsinh Karansinh Kumpavat</h3>
+<h4 class="bold" style="font-size:15px">01592422 </h4>
+<h4 class="bold" style="font-size:15px">Data Visualization (DSC 530/602-01)</h4> 
+<h4 class="italic" style="font-size:15px">Assignment 2 </h4>
+<p style="font-size:15px">This assignment is all my own work. I did not copy or rewrite the code from any other source.</p>
+
+
+<h1>  Donations(End-2015) <h1>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 20, left: 20},
+    padding = {top: 60, right: 60, bottom: 60, left: 60},
+    outerWidth = 500,											// Padding and margin set with d3 margin provided by professor Dr.Koop
+    outerHeight = 500,
+    innerWidth = outerWidth - margin.left - margin.right,
+    innerHeight = outerHeight - margin.top - margin.bottom,
+    width = innerWidth - padding.left - padding.right,
+    height = innerHeight - padding.top - padding.bottom;
+	
+	
+	var candidate = [];
+	
+	
+	for (i=0; i< cands.length; i++) {
+	candidate.push( cands[i].Candidate.split(" ")[1]);
+	
+		}
+	
+    console.log(candidate)
+	var x = d3.scale.ordinal()
+   .domain(candidate)
+    .rangeBands([0,width]);
+  
+
+var y = d3.scale.linear()
+    .domain([0,1000])
+	.range([height,0]);
+	
+	
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+	
+
+var mysvg = d3.select("body").append("svg")
+    .attr("width", outerWidth)
+    .attr("height", outerHeight)
+//	.style('background','#f4f4f4')
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+	
+var g = mysvg.append("g")
+    .attr("transform", "translate(" + padding.left + "," + padding.top + ")");
+
+
+g.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+g.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate(0,0)")
+    .call(yAxis);
+
+   
+   
+   var fund = [] ;
+		
+	for ( i = 0; i < cands.length; i++) {
+    fund.push( cands[i].q4/10000000);
+		
+		}
+	//alert(fund);
+	
+	var candidateparty = [];
+		for (i=0; i< cands.length; i++) {
+	candidateparty.push( cands[i].Party);
+			} 
+ 	//alert(candidateparty);
+		
+	var myData = fund;
+		//alert(myData);
+		
+		var barWidth= 40;
+		var barOffset= 1;  
+        var bar = 8 ;
+	
+	
+					g.append("g")						// for  understanding  to draw bar chart learn from  https://www.youtube.com/channel/UC29ju8bIPH5as8OGnQzwJyA learning D3.
+    			
+					.selectAll('rect')
+					.data(myData)
+					.enter().append('rect')
+					.style("fill", function(d, i){return (candidateparty[i] == "Republican")?"red":"blue";})
+					.attr("transform", "translate(" + 1 + "," + -1+ ")")
+					.attr('width', barWidth)
+					.attr('height',function(d){
+					return d*28;
+				})
+			
+					.attr ('x',function(d ,i){
+					return   i * (barWidth+barOffset) ;
+				})
+  
+					.attr ('y',function(d){
+					return  height - d*28  ;
+				
+				})
+				
+		g .append("text")
+            .attr("transform", "translate("+ (-20) +","+200+")rotate(-90)")   
+            .text("Dollers (in 10 millions)");    // I use stack overflow questions  for understanding how to labeling on axist..
+			
+			
+		
+		
+	                 
+					
+</script>
+<h1>Donation including associated PACs (END-2015) <h1>
+
+<script> 
+
+
+var margin = {top: 20, right: 20, bottom: 20, left: 20},		// Padding and margin set with d3 margin provided by professor
+    padding = {top: 60, right: 60, bottom: 60, left: 60},
+    outerWidth = 500,			
+    outerHeight = 500,
+    innerWidth = outerWidth - margin.left - margin.right,
+    innerHeight = outerHeight - margin.top - margin.bottom,
+    width = innerWidth - padding.left - padding.right,
+    height = innerHeight - padding.top - padding.bottom;
+	
+	
+	var x = d3.scale.ordinal()
+   .domain(candidate)
+    .rangeBands([0,width]);
+  
+
+var y = d3.scale.linear()
+    .domain([0, 18])
+	.range([height,0]);
+	
+	
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+	
+
+var mysvg = d3.select("body").append("svg")
+    .attr("width", outerWidth)
+    .attr("height", outerHeight)
+	
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+	//.append("myChart");
+
+var g = mysvg.append("g")
+    .attr("transform", "translate(" + padding.left + "," + padding.top + ")");
+
+
+g.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+g.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate(0,0)")
+    .call(yAxis);
+
+	
+	
+g .append("text")
+            .attr("transform", "translate("+ (-20) +","+250+")rotate(-90)")  // I use stack overflow questions  for understanding how to labeling on axist..
+            .text("Dollers (in 10 millions)");
+
+			
+			 
+   var candq4value = [] ;
+		var i, j;
+	for ( i = 0; i < cands.length; i++) {
+		candq4value.push({ "y" : cands[i].q4/10000000, "p" : cands[i].Party});
+	}
+	
+	var pacq4value = [] ;
+		
+	for ( i = 0; i < cands.length; i++) {
+		var heightY = 0;
+		for(j = 0; j < pacs.length; j++) {
+			if(cands[i].Candidate == pacs[j].Candidate)
+			{
+				heightY = heightY + pacs[j].q4/10000000;
+			}
+		}
+		pacq4value.push({ "y" : heightY, "p" : cands[i].Party});
+	}
+	
+	var pacCandq4value = [candq4value, pacq4value];
+
+	var stackvalue = d3.layout.stack()(pacCandq4value);
+				
+	console.log(stackvalue);
+			
+		
+		var barWidth= 40;
+		var barOffset= 1;  
+        var bar = 8 ;
+	var j = 0;
+	
+					//g.append("g")						// for  understanding  to draw bar chart learn from  https://www.youtube.com/channel/UC29ju8bIPH5as8OGnQzwJyA learning D3.
+    			
+				var selection = 
+					g.selectAll('.all')
+					.data(stackvalue)
+					.enter().append('g')
+					.attr("class","all")
+					
+					.attr("transform", "translate(1,0)");
+					
+					selection.selectAll('rect')
+					.data(function(d){ return d;})        // referenece:  http://jsfiddle.net/rBfy5/1734/  to check  how to draw stack bar chart also surf many
+															//	websites and stackoverflow for understnding
+					.enter().append('rect')
+					.attr('width', barWidth)
+					.attr('height',function(d){
+					return (y(d.y0)- y(d.y + d.y0));
+				})
+			
+					.attr ('x',function(d ,i){
+					return   i * (barWidth+barOffset) ;
+				})
+  
+					.attr ('y',function(d){
+					return y(d.y+ d.y0) ;
+				
+				})
+				.style("fill", function(d, i){
+					
+					j++;
+					if(i<= 5)
+					{
+						if(j <= 8)
+						{
+							return "Red";
+						}
+						else
+						{
+							return "Pink";
+						}
+					}
+					else
+					{
+						if(j <= 8)
+						{
+							return "Blue";
+						}
+						else
+						{
+							return "Lightblue";
+						}
+					}
+				});
+			
+			
+			
+</script>
+
+
+
+<h1> Donation (Mid-2015 vs.End-2015) <h1>
+<div id= "scatter"> </div>
+
+<script> 
+ createInitialScatterplot();
+ 
+ 
+ var plot  = d3.select("#scatter svg g")
+ var x = d3.scale.linear()
+   .domain ([0,6])
+    .range([0,340]);
+  
+
+var y = d3.scale.linear()
+    .domain([0,12])
+	.range([340,0]);
+	
+	
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+	
+	plot.append("g")
+    .attr("transform", "translate(" + 0 + "," + 0 + ")");
+
+
+plot.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+plot.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate(0,0)")
+    .call(yAxis);
+
+	/*
+	var quater2 = [];
+	for ( i = 0; i < cands.length; i++) {
+   quater2.push( cands[i].q2/10000000);
+	}
+	//alert(quater2);
+	
+	
+   var quater4 = [];
+		
+	for ( i = 0; i < cands.length; i++) {
+   quater4.push( cands[i].q4/10000000);
+	}
+//	alert(quater4); */
+   
+ var myPlot = plot.selectAll("circle")
+   .data(cands)
+   .transition()
+  .duration(3000);
+ 
+  plot.append("text")
+            .attr("transform", "translate("+ (-20) +","+200+")rotate(-90)")   // I use stack overflow questions  for understanding how to labeling on axist..
+            .text("Dollers (in 10 millions)");
+   
+   
+   plot.append("text")
+            .attr("transform", "translate("+ 100 +","+370+")")  
+			.text("Dollers (in 10 millions)");
+			
+   
+   myPlot.attr("cx", function(d) {
+        return  (d.q2*56/10000000);
+   })
+		.attr("cy", function(d) {							// http://vadim.ogievetsky.com/IntroD3/#20 - for understanding enter and update in d3 
+   
+	return height-(d.q4*28/10000000);
+   })
+  
+		.attr("r", 5)
+		.attr("transform", "translate(" +0+ "," + 0+ ")")
+		.style("fill", function(d, i){return (candidateparty[i] == "Republican")?"red":"blue";})
+  
+  
+   
+   
+  // I discuss with some of classmate  about stack bar chart and implementation ..
+</script>
+</body>
+</Html>

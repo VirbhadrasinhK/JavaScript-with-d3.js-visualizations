@@ -1,0 +1,612 @@
+<Html>
+
+ <head>
+    <title> Assignment-3 </title>
+      <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"> </script>
+	  <script src="https://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"> </script>
+      <script src="http://d3js.org/topojson.v1.min.js"> </script>
+	  
+ <style>
+path.state-boundary {
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+ rect.bordered {
+        stroke: #E6E6E6;
+        stroke-width:2px;   
+      }
+
+      text.mono {
+        font-size: 9pt;
+        font-family: Consolas, courier;
+        fill: #aaa;
+      }
+
+      text.axis-workweek {
+        fill: #000;
+      }
+
+      text.axis-worktime {
+        fill: #000;
+      }
+ </style>
+ </head>
+ <body> 
+ <h3 style="font-size:15px"  >Virbhadrsinh Karansinh Kumpavat</h3>
+<h4 class="bold" style="font-size:15px">01592422 </h4>
+<h4 class="bold" style="font-size:15px">Data Visualization (DSC 530/602-01)</h4> 
+<h4 class="italic" style="font-size:15px">Assignment 3 </h4>
+<p style="font-size:15px">This assignment is all my own work. I did not copy or rewrite the code from any other source.</p>
+ ===============================================================================================================================
+ <h1>1. Candidate Visits Choropleth </h1>
+ <div id="trip"> </div>
+<script>
+	
+		var statename = [];
+	
+		function createTripMap(divId, trips, states) {
+			var width = 960,
+				height = 500;
+
+		var svg = d3.select(divId).append("svg")
+			.attr("width", width)
+			.attr("height", height);						//Reference from Dr.koop example = http://codepen.io/dakoop/pen/EKWdaV
+
+		var projection = d3.geo.albersUsa()
+			.scale(1000)
+			.translate([width / 2, height / 2]);
+
+		var path = d3.geo.path()
+			.projection(projection);	
+	
+		var demo = svg.append("g")
+			.attr("class","YlGn")
+			.selectAll("path")
+			.data(states.features)
+			.enter().append("path")
+			.attr("d", path)
+			.style("fill","white")
+			.style("stroke","black")
+		
+	for (var i=0; i< states.features.length; i++) {
+	statename.push(states.features[i].properties.abbrv);
+			}
+	//	console.log(statename);
+		var statevisit = [];
+			for (var i=0; i< statename.length;i++){	
+			var count=0 ;
+				for(var j=0;j<trips.results.length;j++){
+					if(statename[i] == trips.results[j].state)
+				count++;
+					}
+				statevisit.push(count);
+				}
+		//console.log(statevisit);
+	
+			var tripData = d3.map()
+				for(var i=0;i<statename.length; i++){ 
+					tripData.set(statename[i],statevisit[i]);
+				}
+	//	console.log(tripData);
+	
+  var colExtent = d3.extent(tripData.values());
+
+	var color;
+	var continuous = true;
+		if (continuous) {									//Reference from Dr.koop example = http://codepen.io/dakoop/pen/EKWdaV and stackoverflow
+    // -- continuous colormap --
+		color = d3.scale.linear()
+		.domain(colExtent)
+		.range(["rgb(255,255,204)", "rgb(0,109,44)"])
+		.interpolate(d3.interpolateHcl);
+		} 
+		if (continuous) {
+		demo.attr("class", "state-boundary")
+			.style("fill", function(d) {
+	//  console.log(d);
+        return color(tripData.get(d.properties.abbrv));
+      })
+	}
+
+	// create a legend
+		var legendSize = 150;
+		var numLevels;
+			if (continuous) {
+    // for continuous, each rect is 1px wide
+			numLevels = 150;
+			}	
+			else {
+    // for segmented, each rect is 30px wide
+		numLevels = 5;
+		}
+  
+		var legend = svg.append("g").attr("class","YlGn");
+		var levels = legend.selectAll("levels")					//for legend use Dr. koops example  
+					.data(d3.range(numLevels))
+					.enter().append("rect")
+					.attr("x", function(d) {
+						return width - legendSize - 20 +
+						d * legendSize / numLevels;
+						})
+					.attr("y", height - 20)
+					.attr("width", legendSize / numLevels)
+					.attr("height", 16)
+					.style("stroke", "none");
+
+		if (continuous) {
+			levels.style("fill", function(d) {
+			return color(colExtent[0] * (legendSize - d) / legendSize +
+				colExtent[1] * d / legendSize);
+				})
+  } 	else {
+		levels.attr("class", function(d) {
+      return "q" + d + "-" + numLevels;
+			})
+			}
+
+				legend.append("text")
+						.attr("x", width - legendSize - 20)
+						.attr("y", height - 24)
+						.attr("text-anchor", "middle")
+						.text(colExtent[0])
+
+				legend.append("text")
+						.attr("x", width - 20)
+						.attr("y", height - 24)
+						.attr("text-anchor", "middle")
+						.text(colExtent[1])
+
+				legend.append("text")
+						.attr("x", width - legendSize / 2 - 20)
+						.attr("y", height - 40)
+						.attr("text-anchor", "middle")
+						.text("Total number of visit")
+}
+</script>
+
+<h1>2.Top 10 Stops</h1>
+<div id="visit"> </div>
+<script>
+	
+	var toptenvisit = [];
+	
+	  function mostvisitmap(divId, trips, states) {
+		var width = 960,
+			height = 500;
+
+		var svg = d3.select(divId).append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
+		var projection = d3.geo.albersUsa()
+			.scale(1000)
+			.translate([width / 2, height / 2]);
+
+		var path = d3.geo.path()
+			.projection(projection);	
+	
+		var demo = svg.append("g")
+			.selectAll("path")
+			.data(states.features)
+			.enter().append("path")
+			.attr("d", path)
+			.style("fill","white")
+			.style("stroke","black")
+			
+	var statestops = [];
+	for (var i=0; i< trips.results.length; i++) {
+	statestops.push(trips.results[i].stops);
+	
+		}
+	//console.log(statestops);
+	
+	var cityname = [];
+	
+	for (var i=0; i<statestops.length; i++)
+		{ 	for(var j=0;j<statestops[i].length;j++)
+			{								
+				cityname.push(statestops[i][j]['city']);	
+			}
+		}
+		//	console.log(cityname);	
+
+	    cityname.sort();
+		
+    var citycount = null;
+    var cnt = 0;
+	var citylist = d3.map();
+    for (var i = 0; i < cityname.length; i++) {
+        if (cityname[i] != citycount) {
+            if (cnt > 0) {									//function use for compair and count take overview from stack overflow
+			citylist.set(citycount,cnt);     
+            }
+            citycount = cityname[i];
+            cnt = 1;
+        } else {
+            cnt++;
+        }
+    }
+	
+	var test = [];
+		
+	for (var i = 0; i < citylist.keys().length; i++) {
+	 test.push({city : citylist.keys()[i], visit :citylist.values()[i]});
+        
+    }
+	
+	test.sort(function (a, b) {
+		if (a.visit > b.visit) {
+			return 1;
+			}
+		if (a.visit < b.visit) {								//sorting techniques understand from MDN
+			return -1;
+			}
+		// a must be equal to b
+			return 0;
+		}).reverse();
+			console.log(test);
+
+	//var toptenvisit = [];
+
+		for(var i=0;i<10;i++){								
+			toptenvisit.push(test[i].city);	
+				}
+		//	console.log(toptenvisit);
+				
+	var latitude = [];
+	var longitude = [];
+		
+	for (var i=0; i< toptenvisit.length;i++){	
+			
+		for(var j=0;j<trips.results.length;j++)
+		{
+			var flag = false;
+			for(var k=0; k<trips.results[j].stops.length; k++)
+			{			
+			
+			if(toptenvisit[i] == trips.results[j].stops[k].city)
+			
+				{
+				latitude.push(trips.results[j].stops[k].lat);
+				longitude.push(trips.results[j].stops[k].lng);
+				flag = true;
+				break;
+				}
+			}
+			if(flag==true)
+				break;
+			}
+		}	
+			console.log(latitude);
+		//	console.log(longitude);
+
+		var topten = [];
+		
+	for (var i = 0; i < toptenvisit.length; i++) {
+	 topten.push({city : toptenvisit[i],lat :latitude[i],lng :longitude[i]});
+        
+    }
+		console.log(topten);
+		
+						
+	var circle = svg.select("g")
+				.selectAll("circle")
+				.data(topten)
+				.enter().append("circle")
+				.attr("cx", function(d){return projection([d["lng"], d["lat"]])[0];})      // refe from dr koop codepen example
+				.attr("cy", function(d){return projection([d["lng"], d["lat"]])[1];})
+				.attr("r",7)
+				.style("fill", "red");
+				
+	var lable = svg.select("g")
+				.selectAll("text")
+				.data(topten)
+				.enter().append("text")
+				.attr("dx", function(d){return projection([d["lng"], d["lat"]])[0];})
+				.attr("dy", function(d){return projection([d["lng"], d["lat"]])[1];})
+				.text(function(d){return d["city"];});
+			}	
+	/*
+	function processData(errors, trips, states) {
+  createTripMap("#trip", trips, states);
+	mostvisitmap("#visit",trips,states);
+  }
+
+// Use the queue library to load multiple files and then process them
+queue()
+  .defer(d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/trips.json")
+  .defer (d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/us-states.geojson")
+  .await(processData);
+  */
+</script>
+
+<h1>3.City similarity</h1>
+<div id="similarity"> </div>
+	
+<script>			
+
+//  reference for understaning  and  design , color edge and node : https://bl.ocks.org/mbostock/4062045
+
+
+		function similaritymap(divId, trips,similarities) {
+			var width = 960,
+			height = 500;
+			
+			
+			var svg = d3.select(divId).append("svg")
+			.attr("width", width)
+			.attr("height", height);
+		//	<City1>, <State1Abbrv>:<City2>, <State2Abbrv>"
+		
+		var topstate = [];
+			for (var i=0; i< toptenvisit.length;i++){	
+			
+				for(var j=0;j<trips.results.length;j++)
+				{
+				var flag = false;
+					for(var k=0; k<trips.results[j].stops.length; k++)
+					{			
+					if(toptenvisit[i] == trips.results[j].stops[k].city)
+						{
+				topstate.push(trips.results[j].stops[k].state);
+					flag = true;
+						break;
+						}
+					}
+					if(flag==true)
+						break;
+				}
+			}	
+		//console.log(topstate);
+		var cityandstate = [];
+		
+			for (var i = 0; i < toptenvisit.length; i++) {
+			cityandstate.push({ name:toptenvisit[i]+", " + topstate[i]});
+				}
+
+			cityandstate.sort(function (a, b) {
+				if (a.name > b.name) {
+					return 1;
+				}
+				if (a.name < b.name) {		// reference from MDN example
+					return -1;
+				}
+					return 0;
+				})
+	
+		//	console.log(cityandstate); 
+			
+			var combination =[];
+			for (var i=0;i<cityandstate.length-1; i++){
+					for (var j=i+1;j<cityandstate.length;j++){
+						var strength = cityandstate[i].name+":"+cityandstate[j].name;
+					combination.push({source: i , target:j , value: 50*similarities[strength]});
+				}
+			}			
+	//	console.log(combination); // edges
+		
+			var nodename =[];
+				for (var i = 0; i < toptenvisit.length; i++) {
+				nodename.push({name: toptenvisit[i] });					
+				
+															//reference for understaning  and  design , 
+															//color edge and node : https://bl.ocks.org/mbostock/4062045
+				}
+		//		console.log(nodename);  //nodes
+	
+					var force = d3.layout.force()
+								 .nodes(nodename)
+								 .links(combination)
+								 .linkStrength(function (d) {return d.value} )
+								 .size([width, height])
+								 .linkDistance([200])
+								 .charge([-1])
+								 .start();
+			var colors = d3.scale.category10();
+			
+			var edges = svg.selectAll("line")
+				.data(combination)
+				.enter()
+				.append("line")
+				.style("stroke", "#ccc")
+				.style("stroke-width", 1);
+			
+			
+			var nodege = svg.selectAll("circle")	
+								.data(nodename)
+								.enter();
+			
+			var nodes = nodege
+				.append("circle")
+				.attr("r", 10)
+				.style("fill", function(d, i) {
+					return colors(i);
+				})
+				.call(force.drag);
+				
+				var lable = nodege
+							.append("text")
+							.text(function(d) { return d.name });
+			
+				force.on("tick", function() {
+				edges.attr("x1", function(d) { return d.source.x; })
+					 .attr("y1", function(d) { return d.source.y; })
+					 .attr("x2", function(d) { return d.target.x; })
+					 .attr("y2", function(d) { return d.target.y; });
+			
+				nodes.attr("cx", function(d) { return d.x; })
+					 .attr("cy", function(d) { return d.y; })
+					 
+				lable.attr("x", function(d) { return d.x; })
+					 .attr("y", function(d) { return d.y; }) //  reference for lable taken from https://bl.ocks.org/mbostock/950642
+				});
+				} 
+	/*		
+			function processData(errors, trips, states,similarities) {
+			createTripMap("#trip", trips, states);
+			mostvisitmap("#visit",trips,states);
+			similaritymap("#similarity",trips,similarities);
+			}
+
+// Use the queue library to load multiple files and then process them
+queue()
+  .defer(d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/trips.json")
+  .defer (d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/us-states.geojson")
+  .defer(d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/city-similarities.json")
+  .await(processData); */
+ </script>
+		
+<h1>4.Heatmap</h1>
+<div id="heat"> </div>
+
+<script>
+		function heatmap(divId, trips,states) {
+				var width = 800,
+				height = 200;
+				
+		var svg = d3.select(divId).append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
+			var cand =[];
+				for (var i=0; i< trips.results.length; i++) {
+			cand.push(trips.results[i].candidate);
+				}
+			cand = cand.filter( function( item, index, cand ) {
+           return cand.indexOf(item) == index;
+			}); 
+			
+			console.log(cand);
+		
+		var threestate = ["IA", "NH", "SC"] ;
+		console.log(threestate);
+		
+		var statetrip =[];
+		var count = 0;
+			
+			for (var i=0; i< cand.length; i++) {
+				for (var j=0;j<threestate.length;j++){
+						for( var k=0;k<trips.results.length;k++){
+							
+							if(cand[i] == trips.results[k].candidate && threestate[j] == trips.results[k].state) 
+							{ count++; }
+								}
+							statetrip.push({candi:i, state:j , count:count });	
+						count = 0;
+					}
+				}
+				console.log(statetrip);
+			//Reference taken for heat map and margins color and design from  http://bl.ocks.org/tjdecke/5558084 
+	var margin = { top: 50, right: 0, bottom: 100, left: 130 },
+          width = 850 - margin.left - margin.right,
+          height = 1000 - margin.top - margin.bottom,
+          gridSize = Math.floor(width / 25),
+          legendElementWidth = gridSize*2,
+          buckets = 9,
+          colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];
+
+      var svg = d3.select(divId).append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var candLabels = svg.selectAll(".candLabel")
+          .data(cand)																//Reference taken for heat map and margins color and design 
+          .enter().append("text")													//from  http://bl.ocks.org/tjdecke/5558084 
+            .text(function (d) { return d; })
+            .attr("x", 0)
+            .attr("y", function (d, i) { return i * gridSize; })
+            .style("text-anchor", "end")
+            .attr("transform", "translate(-6," + gridSize / 1.5 + ")");
+
+      var stateLabels = svg.selectAll(".stateLabel")
+          .data(threestate)
+          .enter().append("text")
+            .text(function(d) { return d; })
+            .attr("x", function(d, i) { return i * gridSize; })
+            .attr("y", 0)
+            .style("text-anchor", "middle")
+            .attr("transform", "translate(" + gridSize / 2 + ", -6)")
+            
+
+      
+          var colorScale = d3.scale.quantile()
+              .domain([0, buckets - 1, d3.max(statetrip, function (d) { return d.count; })])
+              .range(colors);
+
+          var cards = svg.selectAll(".hour")  
+              .data(statetrip, function(d) {return d.candi+':'+d.state;});
+
+          cards.append("title");
+
+          cards.enter().append("rect")
+              .attr("x", function(d) { return (d.state - 1) * gridSize + 25; })
+              .attr("y", function(d) { return (d.candi - 1) * gridSize +25; })
+              .attr("rx", 4)
+              .attr("ry", 4)
+              .attr("class", "hour bordered")
+              .attr("width", gridSize)
+              .attr("height", gridSize)
+              .style("fill", colors[0]);
+
+          cards.transition().duration(1000)
+              .style("fill", function(d) { return colorScale(d.count); });
+
+          cards.select("title").text(function(d) { return d.count; });
+          
+          cards.exit().remove();
+
+          var legend = svg.selectAll(".legend")
+              .data([0].concat(colorScale.quantiles()), function(d) { return d; });
+
+          legend.enter().append("g")
+              .attr("class", "legend");
+
+          legend.append("rect")
+            .attr("x", function(d, i) { return legendElementWidth * i; })
+            .attr("y", height)
+            .attr("width", legendElementWidth)
+            .attr("height", gridSize / 2)
+            .style("fill", function(d, i) { return colors[i]; });
+
+          legend.append("text")
+            .attr("class", "mono")
+            .text(function(d) { return ">=" + Math.round(d); })
+            .attr("x", function(d, i) { return legendElementWidth * i; })
+            .attr("y", height + gridSize);
+
+          legend.exit().remove();    
+		}	
+		function processData(errors, trips, states,similarities) {
+			createTripMap("#trip", trips, states);
+			mostvisitmap("#visit",trips,states);
+			similaritymap("#similarity",trips,similarities);
+			heatmap("#heat",trips,states);
+			}
+// Use the queue library to load multiple files and then process them
+queue()
+  .defer(d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/trips.json")
+  .defer (d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/us-states.geojson")		// From professor koop's reference examples
+  .defer(d3.json,"http://www.cis.umassd.edu/~dkoop/dsc530/a3/city-similarities.json")
+  .await(processData);
+  
+  /* References taken for and from
+  http://codepen.io/dakoop/pen/EKWdaV // for question 1
+  http://codepen.io/dakoop/pen/yOXWPZ // for  question 2 ploting and lable
+  http://codepen.io/dakoop/pen/PNNyWz // dot plot top ten city
+  
+  https://bl.ocks.org/mbostock/950642 // question 3 labling on circle
+  http://bl.ocks.org/eyaler/10586116 
+  https://bl.ocks.org/mbostock/4062045 // for design for  similarities edges and nodes 
+  
+  http://bl.ocks.org/tjdecke/5558084 // for heat map extra credit question
+  
+  also i use many times use stackoverflow.com and developer.mozilla.org
+  
+  */
+  
+</script>
+ </body>
+</Html>

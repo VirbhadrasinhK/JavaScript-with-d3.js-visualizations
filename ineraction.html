@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>DSC 530 Assignment #4</title>
+  <style>
+   
+   .axis path, .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+    }
+
+    text {
+    font-family: sans-serif;
+    font-size: 10pt;
+    }
+
+    .hidden {
+    display: none;
+    }
+
+    #map {
+ display: inline-block;
+    }
+	
+.county:hover {
+		fill: red;
+		}
+
+ .d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+    #hist {
+    display: inline-block;
+    } 
+
+	
+ .highlight{
+  fill: red;
+  }
+  
+  
+  
+  </style>  
+</head>
+<body>
+<h3 style="font-size:15px"  >Virbhadrsinh Karansinh Kumpavat</h3>
+<h4 class="bold" style="font-size:15px">01592422 </h4>
+<h4 class="bold" style="font-size:15px">Data Visualization (DSC 530/602-01)</h4> 
+<h4 class="italic" style="font-size:15px">Assignment 4 </h4>
+<p style="font-size:15px">This assignment is all my own work. I did not copy or rewrite the code from any other source.</p>
+
+
+
+
+  <div id="info"></div>
+  <div id="map"></div>
+  <div id="hist"></div>
+  <div id="bar"></div>
+  
+  <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+  <script src="http://d3js.org/queue.v1.min.js"></script>
+  <script src="https://bost.ocks.org/mike/fisheye/fisheye.js"></script>
+  <script type="text/javascript" src="http://www.cis.umassd.edu/~dkoop/dsc530-2016sp/a4/a4-do-not-copy-or-change.js"></script>
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+  
+  <script type="text/javascript">
+var tip;
+  function addTooltip(popLookup) {
+  // Reference :for draw tool tip get reference from http://bl.ocks.org/Caged/6476579
+  
+			//	 console.log(popLookup);
+			var svg = d3.select("#map").select("svg")
+				
+				tip = d3.tip()
+                        .attr('class','d3-tip')
+                        .offset([-10, 0])
+                    	 .html(function(d) { console.log(d.properties.county_nam);
+                         return "<span style='color:white'>" + d.properties.county_nam +" : " + popLookup.get(d.properties.county_nam) + "</span>";
+                        }); 
+													
+							
+				svg.call(tip);
+
+			  
+				var g =	svg.selectAll(".county")
+						.on('mouseover', tip.show)
+                         .on('mouseout', tip.hide);
+
+}
+
+function addBrushing() {  /* Reference  taken for brushing http://codepen.io/dakoop/pen/yOXWPZ*/
+
+
+	var map=d3.select("#map").selectAll("path")
+							map.on("mouseenter", function(d) { var bar= d3.select(this)
+							
+
+							var x=d.properties.county_nam;
+									//console.log(x);
+
+		d3.select("#bar")
+			.selectAll(".bar rect")
+			.filter(function (d){return d.County == x})
+			.classed("highlight",true);
+
+})
+
+		.on("mouseout", function(d) { 
+
+
+			var bar= d3.select(this)
+			var x=d.properties.county_nam;
+
+	d3.select("#bar")
+	  .selectAll(".bar rect")
+	  .filter(function (d){return d.County == x})
+	  .classed("highlight",false);
+		tip.hide(d);
+})
+
+//console.log(county);
+
+		var svg = d3.select("#bar").selectAll("rect")
+
+			svg.on("mouseenter", function(d) { var bar= d3.select(this).classed("highlight",true);  //console.log(d)
+							
+					var x =d.County;
+						//console.log(x);
+							
+	d3.select("#map")
+	  .selectAll ('path')
+	  .filter(function (d){return d.properties.county_nam == x})
+	  .classed("highlight",true);		
+							
+	})
+	
+			.on("mouseout", function(d) { 
+				
+				var bar= d3.select(this).classed("highlight",false);;  //console.log(d)
+							
+					var x =d.County;
+						//console.log(x);
+						
+						
+			d3.select("#map")
+			  .selectAll ('path')
+			  .filter(function (d){return d.properties.county_nam == x})
+			  .classed("highlight",false);
+				
+	});
+
+}
+
+function addDistortion() {   //Reference for fisheye:  http://jsfiddle.net/fierval/f4hna/
+
+
+    var xFisheye = d3.fisheye.scale(d3.scale.linear)
+      .domain([0, 72])
+      .range([0, 1000])
+      .distortion(6)
+      .focus(1000 / 2);
+        
+ 
+    var svg = d3.select("#bar");
+
+ 
+
+    var xLine = svg.selectAll(".bar")
+   
+    svg.on("mousemove", function () {
+            var mouse = d3.mouse(this);
+            xFisheye.focus(mouse[0]);
+           
+            startFishEye(mouse[0], mouse[1]);
+    });
+
+    function startFishEye(x, y) {
+
+        xLine.attr("x1", xFisheye)
+            .attr("x2", xFisheye);
+        
+    }
+
+    startFishEye(360, 90);
+
+}
+
+function addHistogram(popData) {   // Referenece taken for Histogram:  https://bl.ocks.org/mbostock/3048450
+console.log(popData);
+
+var Totalpopu = [] ;
+
+ 
+for (var i=0; i< popData.length; i++) {
+	Totalpopu.push(parseInt(Math.log2(popData[i].Population)));
+	}
+	console.log(Totalpopu);
+	
+var margin = {top: 10, right: 30, bottom: 30, left: 30},
+    width = 580 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+ 
+var x = d3.scale.log().base(2)
+    .domain([12,20])
+    .range([0, width]);
+
+var data = d3.layout.histogram()
+    .bins(8)
+    (Totalpopu);
+	console.log(data);
+
+var y = d3.scale.linear()
+	.domain([0,20])
+    .range([height, 0]);
+	
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var svg = d3.select("#hist").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+	.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var bar = svg.selectAll(".bar")
+    .data(data)
+	.enter().append("g")
+    .attr("class", "bar")
+    	
+bar.append("rect")
+    .attr("x", function(d,i){return i*50 })  
+	.attr("y", function(d){return y(d.y)})
+    .attr("width",48)
+    .attr("height", function(d) { return height- y(d.y); });
+	
+	
+svg.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate(0,0)")
+    .call(yAxis);
+	
+	 svg.append("text")
+            .attr("transform", "translate("+ (-20) +","+300+")rotate(-90)")   
+            .text("#Counties");
+	
+	
+	svg.append("text")
+            .attr("transform", "translate("+ (180) +","+485+")" )  
+            .text("Population(log2)");
+
+ 
+ 
+ var multiarray = [{tick:"12-13"},{tick:"13-14"},{tick: "14-15"},{tick:"15-16"},{tick:"16-17"},{tick:"17-18"},{tick:"18-19"},{tick:"19-20"}]; 
+				//console.log(multiarray);
+ 
+ 
+ bar.append("text")
+   .attr("transform", function(d, i){return "translate("+ (i)*50 +","+475+")" })
+	.data(multiarray)
+	.text(function(d,i) { return d["tick"] ; });
+	
+	
+}
+
+function addToVisualization() {
+    addTooltip(window.popLookup);
+    addDistortion();
+    addBrushing();
+    // for extra credit
+    addHistogram(window.popData);
+}
+
+// do not remove the getData call!
+getData(addToVisualization);
+  
+   /* References taken for and from
+  http://bl.ocks.org/Caged/6476579 // for tool tip 
+  
+ Reference  taken for brushing http://codepen.io/dakoop/pen/yOXWPZ// for brushing
+   
+ http://jsfiddle.net/fierval/f4hna/ // for Fisheye Distortion
+  
+ https://bl.ocks.org/mbostock/3048450 // for histogram
+ 
+  
+  also i use many times use stackoverflow.com and developer.mozilla.org
+  
+  */
+  
+  
+  </script>
+</body>
+</html>
